@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "UpdateVehicleRegisterWhenFullPO": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

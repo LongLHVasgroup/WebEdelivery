@@ -1,0 +1,413 @@
+﻿using Dapper;
+using SAP.Middleware.Connector;
+using ServiceSyncPoToWeb.repositories;
+using ServiceSyncPoToWeb.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.ServiceProcess;
+using System.Text;
+using System.Threading.Tasks;
+using System.Timers;
+
+
+namespace ServiceSyncPoToWeb
+{
+    public partial class SyncToWeb : ServiceBase
+    {
+
+        //Initialize the timer
+        private Timer timer = new Timer();
+
+        private static string serviceName = "eDelivery SyncFromSAP";
+
+        //private static string serviceDescription = "BIS is service which is used to transfer data";
+        private static string appPath = System.IO.Path.GetDirectoryName(new System.Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath);
+
+        //private static string executableServicePath = System.IO.Path.Combine(appPath, "WinServiceSyncToSAP.exe");
+        private static string logFilePath = System.IO.Path.Combine(appPath, "eDelivery-SyncFromSAP-" + DateTime.Now.ToString("yyyyMMdd") + ".log");
+
+        private static string cnt = ConfigurationManager.ConnectionStrings["VASConnectionString"].ConnectionString;
+        private static string bukr1000 = ConfigurationManager.AppSettings["BUKR_1000"].ToString();
+        private static string bukr3000 = ConfigurationManager.AppSettings["BUKR_3000"].ToString();
+        private static string bukr4000 = ConfigurationManager.AppSettings["BUKR_4000"].ToString();
+
+        private static int Interval = int.Parse(ConfigurationManager.AppSettings["Interval"].ToString());
+
+
+        public SyncToWeb()
+        {
+            InitializeComponent();
+            this.ServiceName = serviceName;
+            this.CanHandlePowerEvent = true;
+            this.CanHandleSessionChangeEvent = true;
+            this.CanPauseAndContinue = true;
+            this.CanShutdown = true;
+            this.CanStop = true;
+            this.AutoLog = false; //if use custom service
+
+
+            #region đồng bộ sang SAP
+
+            //handle Elapsed event
+            timer.Elapsed += new ElapsedEventHandler(OnElapsedTime);
+            //15 phút chạy 1 lần
+            //timer.Interval = 1000 * 60 * 15;
+            //30 giây chạy 1 lần
+            //timer.Interval = 1000 * 30;
+            timer.Interval = Interval;
+
+            timer.Enabled = true;
+
+            #endregion đồng bộ sang SAP
+
+        }
+
+        private void OnElapsedTime(object sender, ElapsedEventArgs e)
+        {
+            WriteLogFile(logFilePath, "Service start at OnElapsedTime");
+
+            #region Service start
+
+            //SyncMasterFromSAPToPMC();
+
+            //Đồng bộ PO từ SAP về PMC
+            SyncPOFromSAPToWeb(bukr1000);
+
+            //SyncPOFromSAPToWeb(bukr3000);
+
+            //SyncPOFromSAPToWeb(bukr4000); 
+
+            #endregion Service start
+        }
+
+        private void SyncPOFromSAPToWeb(string plant)
+        {
+            try
+            {
+                WriteLogFile(logFilePath, "SyncPOFromSAPToWeb begin bukrs:" + plant);
+                using (var connection = new SqlConnection(cnt))
+                {
+                    //connection.Execute(@"select * from CustomerModel");
+                    //Khởi tạo class SAP
+                    SAPRepository _sap = new SAPRepository();
+                    //Khởi tạo destination: giống giống _context bên entity
+                    //Trong hàm GetRfcWithConfig có thông tin kết nối với server test
+                     RfcDestination destination = _sap.GetRfcWithConfig();
+
+                    //Khởi tạo hàm đồng bộ: ZPMC_FM_PO_CALL_UPDATE
+                    //Hàm kiểm tra PO nào có sự thay đổi, thêm mới gửi sang phần mềm cân.
+                    IRfcFunction updateFunction = destination.Repository.CreateFunction("ZPMC_FM_PO_CALL_UPDATE");
+                    updateFunction.SetValue("I_BUKRS", plant);//dien so oder number vao
+                    //Call BAPI on SAP system
+                    updateFunction.Invoke(destination);
+                    // Lấy kết quả trả về table: GT_DATA
+                    IRfcTable UPDATE_ITEM_LIST = updateFunction.GetTable("GT_DATA");
+                    //Convert kết quả trả về thành DataTable
+                    DataTable updateTable = IRfcTableExtentions.ToDataTable(UPDATE_ITEM_LIST, "GT_DATA");
+                    //var count = connection.Query<int>("SELECT count(*) from CustomerModel").FirstOrDefault();
+                    //WriteLogFile(logFilePath, "SyncPOFromSAPToPMC Connected: " + connection);
+                    //WriteLogFile(logFilePath, "Count CungDuong: " + count);
+
+
+
+                    if (updateTable != null)
+                    {
+                        WriteLogFile(logFilePath, "SyncPOFromSAPToPMC count rows Sync: " + updateTable.AsEnumerable().Count());
+                        //group theo PoNumber
+                        var groupPo = updateTable.AsEnumerable().GroupBy(x => x.Field<string>("EBELN")).Select(x => x.Key);
+                        WriteLogFile(logFilePath, "SyncPOFromSAPToPMC groupPo: " + string.Join(",", groupPo));
+
+                        //dựa vào PoNumber => call ZPMC_FM_PO_GET để lấy thông tin Po, Poline
+                        foreach (var itemPo in groupPo)
+                        {
+                            WriteLogFile(logFilePath, "SyncPOFromSAPToPMC itemPo: " + itemPo);
+                            IRfcFunction getPoFunction = destination.Repository.CreateFunction("ZPMC_FM_PO_GET");
+                            getPoFunction.SetValue("I_BUKRS", plant);
+                            getPoFunction.SetValue("I_EBELN", itemPo);
+
+                            //Call BAPI on SAP system
+                            getPoFunction.Invoke(destination);
+
+                            //Get result into table GT_DATA
+                            IRfcTable PO_ITEM_LIST = getPoFunction.GetTable("GT_DATA");
+
+                            //Convert kết quả trả về thành DataTable
+                            DataTable PolineTable = IRfcTableExtentions.ToDataTable(PO_ITEM_LIST, "GT_DATA");
+
+                            List<string> lstPoline = new List<string>();
+
+                            if (PolineTable != null && PolineTable.Rows.Count > 0)
+                            {
+                                //Lấy dữ liệu table(ZPMC_FM_PO_CALL_UPDATE) dựa vào Po
+                                var tablePO = updateTable.AsEnumerable().FirstOrDefault(x => x.Field<string>("EBELN") == itemPo);
+                                var model = new SyncPoViewModel();
+                                model.ID = tablePO["ID"].ToString();
+                                model.BUKRS = tablePO["BUKRS"].ToString();
+                                model.EBELN = tablePO["EBELN"].ToString();
+                                //model.EBELP = tablePO["EBELP"].ToString();
+                                model.NAME_FM = tablePO["NAME_FM"].ToString();
+                                model.TIME_SEND = tablePO["TIME_SEND"].ToString();
+                                model.TIME_RECEIVE = tablePO["ID"].ToString();
+                                model.ZTYPE = tablePO["TYPE"].ToString();
+                                lstPoline = updateTable.AsEnumerable().Where(x => x.Field<string>("EBELN") == itemPo).Select(x => x.Field<string>("EBELP")).ToList();
+
+                                //check PoNumber có trên trạm cân
+                                var pPoMasterCheck = new DynamicParameters();
+
+                                //Lấy note đầu tiên của POline
+                                string notePO = PolineTable.AsEnumerable().OrderBy(x => x.Field<string>("EBELP")).Select(x => x.Field<string>("TTNH")).First();
+                                pPoMasterCheck.Add("Note", notePO);
+                                pPoMasterCheck.Add("PONumber", new DbString() { Value = itemPo, IsAnsi = true, Length = 100 });
+                                pPoMasterCheck.Add("CompanyCode", plant);
+
+                                var hasExists = connection.Query<int>(@"select 1 from dbo.POMasterModel where PONumber=@PONumber", pPoMasterCheck).FirstOrDefault();
+                                try
+                                {
+                                    if (hasExists > 0)
+                                    {
+                                        #region sync Update
+                                        foreach (DataRow itemrowPoline in PolineTable.Rows)
+                                        {
+                                            var pItemRowPoline = new DynamicParameters();
+                                            pItemRowPoline.Add("PONumber", new DbString() { Value = itemrowPoline["EBELN"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("POLine", new DbString() { Value = itemrowPoline["EBELP"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("ProductCode", new DbString() { Value = itemrowPoline["MATNR"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("ProductName", new DbString() { Value = itemrowPoline["MAKTX"].ToString(), IsAnsi = false, Length = 1000 });
+                                            pItemRowPoline.Add("Qty", decimal.Parse(itemrowPoline["MENGE"].ToString()));
+                                            pItemRowPoline.Add("UNIT", new DbString() { Value = itemrowPoline["MEINS"].ToString(), IsAnsi = false, Length = 3 });
+                                            pItemRowPoline.Add("OverTolerance", decimal.Parse(itemrowPoline["UEBTO"].ToString()));
+                                            pItemRowPoline.Add("UnderTolerance", decimal.Parse(itemrowPoline["UNTTO"].ToString()));
+                                            pItemRowPoline.Add("isUnlimited", itemrowPoline["UEBTK"].ToString() == "X");
+                                            pItemRowPoline.Add("DocumentDate", itemrowPoline["BEDAT"].ToString());
+                                            pItemRowPoline.Add("DeliveryDate", itemrowPoline["EINDT"].ToString());
+                                            pItemRowPoline.Add("isRelease", itemrowPoline["FRGKE"].ToString() == "X");
+                                            pItemRowPoline.Add("isDeliveryCompleted", itemrowPoline["ELIKZ"].ToString() == "X");
+                                            pItemRowPoline.Add("WarehouseCode", itemrowPoline["LGORT"].ToString());
+
+                                            connection.Execute(@"update POLineModel set
+                                                            ProductCode =@ProductCode ,
+                                                            ProductName =@ProductName ,
+                                                            Qty =@Qty,
+                                                            UNIT=@UNIT ,
+                                                            OverTolerance = @OverTolerance,
+                                                            UnderTolerance= @UnderTolerance ,
+                                                            isUnlimited = @isUnlimited,
+                                                            DocumentDate= @DocumentDate ,
+                                                            DeliveryDate = @DeliveryDate,
+                                                            isRelease= @isRelease ,
+                                                            isDeliveryCompleted= @isDeliveryCompleted,
+                                                            WarehouseCode= @WarehouseCode 
+                                                    where POLine = @POLine and PONumber=@PONumber", pItemRowPoline);
+                                        }
+
+                                        var totalQty = PolineTable.AsEnumerable().Where(x => x.Field<string>("MEINS") == "KG").Sum(x => x.Field<decimal>("MENGE"));
+                                        //update poMaster
+                                        pPoMasterCheck.Add("QtyTotal", totalQty);
+
+                                        connection.Execute(@"update POMasterModel set QtyTotal=@QtyTotal,Note=@Note, CompanyCode = @CompanyCode where PONumber=@PONumber", pPoMasterCheck);
+                                        WriteLogFile(logFilePath, "UPDATE");
+                                        #endregion sync update
+                                    }
+                                    else
+                                    {
+                                        #region sync Add
+                                        foreach (DataRow itemrowPoline in PolineTable.Rows)
+                                        {
+                                            var pItemRowPoline = new DynamicParameters();
+                                            pItemRowPoline.Add("PONumber", new DbString() { Value = itemrowPoline["EBELN"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("POLine", new DbString() { Value = itemrowPoline["EBELP"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("ProviderCode", new DbString() { Value = itemrowPoline["LIFNR"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("ProviderName", new DbString() { Value = itemrowPoline["NAME"].ToString(), IsAnsi = false, Length = 1000 });
+                                            pItemRowPoline.Add("CompanyCode", new DbString() { Value = itemrowPoline["BUKRS"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("ProductCode", new DbString() { Value = itemrowPoline["MATNR"].ToString(), IsAnsi = false, Length = 100 });
+                                            pItemRowPoline.Add("ProductName", new DbString() { Value = itemrowPoline["MAKTX"].ToString(), IsAnsi = false, Length = 1000 });
+                                            pItemRowPoline.Add("Qty", decimal.Parse(itemrowPoline["MENGE"].ToString()));
+                                            pItemRowPoline.Add("UNIT", new DbString() { Value = itemrowPoline["MEINS"].ToString(), IsAnsi = false, Length = 3 });
+                                            pItemRowPoline.Add("OverTolerance", decimal.Parse(itemrowPoline["UEBTO"].ToString()));
+                                            pItemRowPoline.Add("UnderTolerance", decimal.Parse(itemrowPoline["UNTTO"].ToString()));
+                                            pItemRowPoline.Add("isUnlimited", itemrowPoline["UEBTK"].ToString() == "X");
+                                            pItemRowPoline.Add("DocumentDate", itemrowPoline["BEDAT"].ToString());
+                                            pItemRowPoline.Add("DeliveryDate", itemrowPoline["EINDT"].ToString());
+                                            pItemRowPoline.Add("isRelease", itemrowPoline["FRGKE"].ToString() == "X");
+                                            pItemRowPoline.Add("isDeliveryCompleted", itemrowPoline["ELIKZ"].ToString() == "X");
+                                            pItemRowPoline.Add("WarehouseCode", itemrowPoline["LGORT"].ToString());
+
+                                            connection.Execute(@"INSERT INTO dbo.POLineModel
+                                                    (   POLine ,
+                                                        PONumber ,
+                                                        ProviderCode,
+                                                        ProviderName,
+                                                        CompanyCode ,
+                                                        ProductCode ,
+                                                        ProductName ,
+                                                        Qty ,
+                                                        UNIT ,
+                                                        OverTolerance ,
+                                                        UnderTolerance ,
+                                                        isUnlimited ,
+                                                        DocumentDate ,
+                                                        DeliveryDate ,
+                                                        isRelease ,
+                                                        isDeliveryCompleted ,
+                                                        WarehouseCode
+                                                    )
+                                                values(
+                                                        @POLine ,
+                                                        @PONumber ,
+                                                        @ProviderCode,
+                                                        @ProviderName,
+                                                        @CompanyCode ,
+                                                        @ProductCode ,
+                                                        @ProductName ,
+                                                        @Qty ,
+                                                        @UNIT ,
+                                                        @OverTolerance ,
+                                                        @UnderTolerance ,
+                                                        @isUnlimited ,
+                                                        @DocumentDate ,
+                                                        @DeliveryDate ,
+                                                        @isRelease ,
+                                                        @isDeliveryCompleted ,
+                                                        @WarehouseCode
+                                                        )", pItemRowPoline);
+                                        }
+
+                                        //insert poMaster
+                                        pPoMasterCheck.Add("KG", new DbString() { Value = Constants.Constant.KG, IsAnsi = true, Length = 3 });
+                                        pPoMasterCheck.Add("AccountGroup", Constants.Constant.NhapKhau, size: 50);
+
+                                        connection.Execute(@" INSERT INTO dbo.POMasterModel
+                                                            ( PONumber ,
+                                                              ProviderCode ,
+                                                              ProviderName ,
+                                                              QtyTotal ,
+                                                              isNhapKhau ,
+                                                              isCompelete,
+                                                              Note,
+                                                              CompanyCode
+                                                            )
+                                                            select top 1 PONumber,ProviderCode,ProviderName,(SELECT SUM(_pl.Qty) FROM dbo.POLineModel _pl WHERE _pl.PONumber=pl.PONumber AND _pl.UNIT =@KG),
+                                                                CASE WHEN exists  (SELECT 1 FROM dbo.ProviderModel _pm WHERE _pm.AccountGroup=@AccountGroup AND _pm.ProviderCode=pl.ProviderCode ) THEN 1 ELSE 0 end ,
+                                                                0,
+                                                               @Note,
+                                                               @CompanyCode
+                                                            from dbo.POLineModel pl where PONumber=@PONumber", pPoMasterCheck);
+
+                                        #endregion sync Add
+                                    }
+                                    model.STATUS = Constants.Constant.SUCCESS;
+                                    model.GHI_CHU = string.Empty;
+                                    PushStatusPotoSAP(model, destination, lstPoline);
+                                }
+                                catch (Exception ex)
+                                {
+                                    WriteLogFile(logFilePath, "SyncPOFromSAPToPMC error: " + ex.ToString());
+                                    model.STATUS = Constants.Constant.ERROR;
+                                    model.GHI_CHU = ex.ToString();
+                                    PushStatusPotoSAP(model, destination, lstPoline);
+                                    
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        WriteLogFile(logFilePath, "SyncPOFromSAPToPMC count rows Sync: null");
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLogFile(logFilePath, "SyncPOFromSAPToPMC errror: " + ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Hàm trả kết quả đồng bộ PO từ phần mềm cân về SAP.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="destination"></param>
+        public string PushStatusPotoSAP(SyncPoViewModel model, RfcDestination destination, List<string> lstPolines)
+        {
+            try
+            {
+                foreach (var item in lstPolines)
+                {
+                    //Khởi tạo hàm đồng bộ: ZPMC_FM_PO_GET_STATUS
+                    model.EBELP = item;
+                    model.TIME_SEND = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    IRfcFunction functionKHO = destination.Repository.CreateFunction("ZPMC_FM_PO_GET_STATUS");
+                    //Điền thông tin so oder de lay du lieu
+                    functionKHO.SetValue("ID", model.ID);
+                    functionKHO.SetValue("BUKRS", model.BUKRS);
+                    functionKHO.SetValue("EBELN", model.EBELN);
+                    functionKHO.SetValue("EBELP", model.EBELP);
+                    functionKHO.SetValue("NAME_FM", model.NAME_FM);
+                    functionKHO.SetValue("TIME_SEND", model.TIME_SEND);
+                    functionKHO.SetValue("TIME_RECEIVE", DateTime.Now.ToString("yyyyMMddHHmmss"));
+                    functionKHO.SetValue("STATUS", model.STATUS);
+                    functionKHO.SetValue("ZTYPE", model.ZTYPE);
+                    functionKHO.SetValue("GHI_CHU", model.GHI_CHU);
+
+                    //Call BAPI on SAP system
+                    functionKHO.Invoke(destination);
+
+                    IRfcTable UPDATE_ITEM_LIST = functionKHO.GetTable("GT_RESULT");
+                    DataTable updateTable = IRfcTableExtentions.ToDataTable(UPDATE_ITEM_LIST, "GT_RESULT");
+                    if (updateTable != null)
+                    {
+                        WriteLogFile(logFilePath, "Log ZPMC_FM_PO_GET_STATUS: ");
+                    }
+                }
+            }catch(Exception ex)
+            {
+                WriteLogFile(logFilePath, "Log ZPMC_FM_PO_GET_STATUS ERROR: " + ex.ToString());
+            }
+
+
+
+            // Lấy kết quả trả về table: GT_DATA
+            //var result = functionKHO.GetChar("E_STATUS");  đang bị lỗi ở phần lấy
+            //Convert kết quả trả về thành DataTable
+            //DataTable retKHO = IRfcTableExtentions.ToDataTable(lst_KHO_ITEM, "E_STATUS");
+            return string.Empty;
+        }
+
+        private void WriteLogFile(string logFilePath, string message)
+        {
+            if (System.IO.File.Exists(logFilePath))
+            {
+                if (!System.IO.File.Exists(logFilePath))
+                    System.IO.File.Create(logFilePath);
+            }
+            using (FileStream fileStream = new FileStream(logFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            {
+                fileStream.Flush();
+                fileStream.Close();
+            }
+
+            using (StreamWriter sw = new StreamWriter(logFilePath, true))
+            {
+                string lastRecordText = "# " + System.DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss") + " # " + Environment.NewLine + "#" + message + " #" + Environment.NewLine;
+                sw.WriteLine(lastRecordText);
+                sw.Close();
+            }
+        }
+
+        protected override void OnStart(string[] args)
+        {
+        }
+
+        protected override void OnStop()
+        {
+        }
+    }
+}

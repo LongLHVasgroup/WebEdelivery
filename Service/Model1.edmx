@@ -1,0 +1,782 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="Web_BookingTransModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="CungDuongModel">
+          <Key>
+            <PropertyRef Name="CungDuongCode" />
+          </Key>
+          <Property Name="CungDuongCode" Type="int" Nullable="false" />
+          <Property Name="CungDuongName" Type="nvarchar" MaxLength="500" Nullable="false" />
+          <Property Name="KhoangCach" Type="decimal" Precision="18" Scale="3" />
+          <Property Name="Plant" Type="varchar" MaxLength="10" />
+        </EntityType>
+        <EntityType Name="CustomerModel">
+          <Key>
+            <PropertyRef Name="CustomerId" />
+          </Key>
+          <Property Name="CustomerId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="CustomerCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="CustomerName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Address" Type="nvarchar" MaxLength="4000" />
+          <Property Name="isSAPData" Type="bit" />
+          <Property Name="CreatedTime" Type="datetime" />
+          <Property Name="LastEditedTime" Type="datetime" />
+          <Property Name="Actived" Type="bit" />
+          <Property Name="CungDuongCode" Type="int" />
+          <Property Name="CungDuongName" Type="nvarchar" MaxLength="500" />
+        </EntityType>
+        <EntityType Name="DriverRegister">
+          <Key>
+            <PropertyRef Name="DriverId" />
+          </Key>
+          <Property Name="DriverId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="DriverName" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="VehicleNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="CreatedTime" Type="datetime" />
+          <Property Name="ModifiedTime" Type="datetime" />
+          <Property Name="Creator" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="DriverCardNo" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Active" Type="bit" />
+          <Property Name="OwnerId" Type="uniqueidentifier" Nullable="false" />
+        </EntityType>
+        <EntityType Name="POLineModel">
+          <Key>
+            <PropertyRef Name="PONumber" />
+            <PropertyRef Name="POLine" />
+          </Key>
+          <Property Name="PONumber" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="POLine" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="ProviderCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProviderName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="CompanyCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProductCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Qty" Type="decimal" Precision="18" Scale="3" />
+          <Property Name="UNIT" Type="nvarchar" MaxLength="3" />
+          <Property Name="OverTolerance" Type="decimal" Precision="3" Scale="1" />
+          <Property Name="UnderTolerance" Type="decimal" Precision="3" Scale="1" />
+          <Property Name="isUnlimited" Type="bit" />
+          <Property Name="DocumentDate" Type="date" />
+          <Property Name="DeliveryDate" Type="date" />
+          <Property Name="isRelease" Type="bit" />
+          <Property Name="isDeliveryCompleted" Type="bit" />
+          <Property Name="SoLuongDaNhap" Type="decimal" Precision="18" Scale="3" />
+          <Property Name="isPMCCompleted" Type="bit" />
+          <Property Name="WarehouseCode" Type="nvarchar" MaxLength="100" />
+        </EntityType>
+        <EntityType Name="POMasterModel">
+          <Key>
+            <PropertyRef Name="PONumber" />
+          </Key>
+          <Property Name="PONumber" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="ProviderCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProviderName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="QtyTotal" Type="decimal" Precision="18" Scale="3" />
+          <Property Name="isNhapKhau" Type="bit" />
+          <Property Name="isCompelete" Type="bit" />
+          <Property Name="Note" Type="nvarchar" MaxLength="500" />
+          <Property Name="SoLuongDaNhap" Type="decimal" Precision="18" Scale="3" />
+        </EntityType>
+        <EntityType Name="ProviderModel">
+          <Key>
+            <PropertyRef Name="ProviderId" />
+          </Key>
+          <Property Name="ProviderId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="ProviderCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProviderName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Address" Type="nvarchar" MaxLength="4000" />
+          <Property Name="AccountGroup" Type="nvarchar" MaxLength="50" />
+          <Property Name="isSAPData" Type="bit" />
+          <Property Name="CreatedTime" Type="datetime" />
+          <Property Name="LastEditedTime" Type="datetime" />
+          <Property Name="Actived" Type="bit" />
+        </EntityType>
+        <EntityType Name="SOLineModel">
+          <Key>
+            <PropertyRef Name="SOLine" />
+            <PropertyRef Name="SONumber" />
+          </Key>
+          <Property Name="SOLine" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="SONumber" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="CompanyCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="CustomerCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="CustomerName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="ProductCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Qty" Type="decimal" Precision="18" Scale="3" />
+          <Property Name="UNIT" Type="nvarchar" MaxLength="3" />
+          <Property Name="OverTolerance" Type="decimal" Precision="3" Scale="1" />
+          <Property Name="UnderTolerance" Type="decimal" Precision="3" Scale="1" />
+          <Property Name="isUnlimited" Type="bit" />
+          <Property Name="DocumentDate" Type="date" />
+          <Property Name="PONumber" Type="nvarchar" MaxLength="35" />
+          <Property Name="isComplete" Type="bit" />
+          <Property Name="SoLuongDaXuat" Type="decimal" Precision="18" Scale="3" />
+          <Property Name="isClosed" Type="bit" />
+        </EntityType>
+        <EntityType Name="SOMasterModel">
+          <Key>
+            <PropertyRef Name="SONumber" />
+          </Key>
+          <Property Name="SONumber" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="CustomerCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="CustomerName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="QtyTotal" Type="decimal" Precision="13" Scale="3" />
+          <Property Name="isNhapKhau" Type="bit" />
+          <Property Name="isCompelete" Type="bit" />
+          <Property Name="SoLuongDaXuat" Type="decimal" Precision="18" Scale="3" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'Web_BookingTrans.dbo.SyncTable' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="SyncTable">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" Nullable="false" />
+          <Property Name="time" Type="datetime" />
+        </EntityType>
+        <EntityType Name="UserModel">
+          <Key>
+            <PropertyRef Name="userid" />
+          </Key>
+          <Property Name="userid" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="username" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="password" Type="varchar" MaxLength="100" />
+          <Property Name="fullname" Type="nvarchar" MaxLength="100" />
+          <Property Name="email" Type="nvarchar" MaxLength="100" />
+          <Property Name="phone" Type="nvarchar" MaxLength="50" />
+          <Property Name="memberof" Type="uniqueidentifier" />
+          <Property Name="active" Type="bit" />
+          <Property Name="token" Type="varchar" MaxLength="255" />
+          <Property Name="rolecode" Type="int" />
+          <Property Name="UserType" Type="nvarchar" MaxLength="50" />
+          <Property Name="taxcode" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="IsService" Type="bit" />
+          <Property Name="IsVeTinh" Type="bit" />
+        </EntityType>
+        <EntityType Name="VehicleModel">
+          <Key>
+            <PropertyRef Name="VehicleId" />
+          </Key>
+          <Property Name="VehicleId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Type" Type="int" />
+          <Property Name="VehicleNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="VehicleOwner" Type="nvarchar" MaxLength="100" />
+          <Property Name="DriverId" Type="uniqueidentifier" />
+          <Property Name="DriverName" Type="nvarchar" MaxLength="100" />
+          <Property Name="DriverCardNo" Type="nvarchar" MaxLength="100" />
+          <Property Name="VehicleWeight" Type="decimal" Precision="18" Scale="0" Nullable="false" />
+          <Property Name="isRoMooc" Type="int" />
+          <Property Name="TrongLuongDangKiem" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="TyLeVuot" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="isLock" Type="bit" />
+          <Property Name="isLockEdit" Type="bit" />
+          <Property Name="CreatedUserId" Type="uniqueidentifier" />
+          <Property Name="CreatedTime" Type="datetime" />
+          <Property Name="LastEditUserId" Type="uniqueidentifier" />
+          <Property Name="LastEditTime" Type="datetime" />
+          <Property Name="TempWeight" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="UpdateTempWeightTime" Type="datetime" />
+          <Property Name="isContainer" Type="bit" />
+          <Property Name="isDauKeo" Type="bit" />
+        </EntityType>
+        <EntityType Name="VehicleOwnerModel">
+          <Key>
+            <PropertyRef Name="VehicleOwner" />
+          </Key>
+          <Property Name="VehicleOwner" Type="nvarchar" MaxLength="100" Nullable="false" />
+          <Property Name="VehicleOwnerName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="ProviderCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="CustomerCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="Actived" Type="bit" />
+        </EntityType>
+        <EntityType Name="VehicleRegisterMobileModel">
+          <Key>
+            <PropertyRef Name="VehicleRegisterMobileId" />
+          </Key>
+          <Property Name="VehicleRegisterMobileId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="UserRegisterId" Type="uniqueidentifier" />
+          <Property Name="RegisterTime" Type="datetime" />
+          <Property Name="ThoiGianToiDuKien" Type="datetime" />
+          <Property Name="ThoiGianToiThucTe" Type="datetime" />
+          <Property Name="DVVCCode" Type="nvarchar" MaxLength="255" />
+          <Property Name="DVVC" Type="nvarchar" MaxLength="255" />
+          <Property Name="SoDonHang" Type="nvarchar" MaxLength="255" />
+          <Property Name="GiaoNhan" Type="nvarchar" MaxLength="10" />
+          <Property Name="VehicleNumber" Type="nvarchar" MaxLength="50" />
+          <Property Name="DriverName" Type="nvarchar" MaxLength="200" />
+          <Property Name="DriverIdCard" Type="nvarchar" MaxLength="50" />
+          <Property Name="TrongLuongGiaoDuKien" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="TrongLuongGiaoThucTe" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="TapChat" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="CungDuongCode" Type="int" />
+          <Property Name="CungDuongName" Type="nvarchar" MaxLength="512" />
+          <Property Name="Assets" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Note" Type="nvarchar" MaxLength="4000" />
+          <Property Name="ModifyTime" Type="datetime" />
+          <Property Name="ScaleTicketCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="AllowEdit" Type="bit" />
+          <Property Name="UserActiveId" Type="uniqueidentifier" />
+          <Property Name="IsActive" Type="bit" />
+        </EntityType>
+        <EntityType Name="VehicleRegisterPODetailModel">
+          <Key>
+            <PropertyRef Name="VehicleRegisterPODetailId" />
+          </Key>
+          <Property Name="VehicleRegisterPODetailId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="VehicleRegisterMobileId" Type="uniqueidentifier" />
+          <Property Name="PONumber" Type="nvarchar" MaxLength="100" />
+          <Property Name="POLine" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProductCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="TiLe" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
+          <Property Name="TrongLuong" Type="decimal" Precision="18" Scale="0" />
+        </EntityType>
+        <EntityContainer Name="Web_BookingTransModelStoreContainer">
+          <EntitySet Name="CungDuongModel" EntityType="Self.CungDuongModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="CustomerModel" EntityType="Self.CustomerModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DriverRegister" EntityType="Self.DriverRegister" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="POLineModel" EntityType="Self.POLineModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="POMasterModel" EntityType="Self.POMasterModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ProviderModel" EntityType="Self.ProviderModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SOLineModel" EntityType="Self.SOLineModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SOMasterModel" EntityType="Self.SOMasterModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UserModel" EntityType="Self.UserModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="VehicleModel" EntityType="Self.VehicleModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="VehicleOwnerModel" EntityType="Self.VehicleOwnerModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="VehicleRegisterMobileModel" EntityType="Self.VehicleRegisterMobileModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="VehicleRegisterPODetailModel" EntityType="Self.VehicleRegisterPODetailModel" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="SyncTable" EntityType="Self.SyncTable" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [SyncTable].[id] AS [id], 
+    [SyncTable].[time] AS [time]
+    FROM [dbo].[SyncTable] AS [SyncTable]</DefiningQuery>
+          </EntitySet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="Web_BookingTransModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="CungDuongModel">
+          <Key>
+            <PropertyRef Name="CungDuongCode" />
+          </Key>
+          <Property Name="CungDuongCode" Type="Int32" Nullable="false" />
+          <Property Name="CungDuongName" Type="String" MaxLength="500" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="KhoangCach" Type="Decimal" Precision="18" Scale="3" />
+          <Property Name="Plant" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="CustomerModel">
+          <Key>
+            <PropertyRef Name="CustomerId" />
+          </Key>
+          <Property Name="CustomerId" Type="Guid" Nullable="false" />
+          <Property Name="CustomerCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CustomerName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Address" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="isSAPData" Type="Boolean" />
+          <Property Name="CreatedTime" Type="DateTime" Precision="3" />
+          <Property Name="LastEditedTime" Type="DateTime" Precision="3" />
+          <Property Name="Actived" Type="Boolean" />
+          <Property Name="CungDuongCode" Type="Int32" />
+          <Property Name="CungDuongName" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="DriverRegister">
+          <Key>
+            <PropertyRef Name="DriverId" />
+          </Key>
+          <Property Name="DriverId" Type="Guid" Nullable="false" />
+          <Property Name="DriverName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CreatedTime" Type="DateTime" Precision="3" />
+          <Property Name="ModifiedTime" Type="DateTime" Precision="3" />
+          <Property Name="Creator" Type="Guid" Nullable="false" />
+          <Property Name="DriverCardNo" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Active" Type="Boolean" />
+          <Property Name="OwnerId" Type="Guid" Nullable="false" />
+          <Property Name="VehicleNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="POLineModel">
+          <Key>
+            <PropertyRef Name="PONumber" />
+            <PropertyRef Name="POLine" />
+          </Key>
+          <Property Name="PONumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="POLine" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="ProviderCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProviderName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProductCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Qty" Type="Decimal" Precision="18" Scale="3" />
+          <Property Name="UNIT" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="OverTolerance" Type="Decimal" Precision="3" Scale="1" />
+          <Property Name="UnderTolerance" Type="Decimal" Precision="3" Scale="1" />
+          <Property Name="isUnlimited" Type="Boolean" />
+          <Property Name="DocumentDate" Type="DateTime" Precision="0" />
+          <Property Name="DeliveryDate" Type="DateTime" Precision="0" />
+          <Property Name="isRelease" Type="Boolean" />
+          <Property Name="isDeliveryCompleted" Type="Boolean" />
+          <Property Name="SoLuongDaNhap" Type="Decimal" Precision="18" Scale="3" />
+          <Property Name="isPMCCompleted" Type="Boolean" />
+          <Property Name="WarehouseCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="POMasterModel">
+          <Key>
+            <PropertyRef Name="PONumber" />
+          </Key>
+          <Property Name="PONumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="ProviderCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProviderName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="QtyTotal" Type="Decimal" Precision="18" Scale="3" />
+          <Property Name="isNhapKhau" Type="Boolean" />
+          <Property Name="isCompelete" Type="Boolean" />
+          <Property Name="Note" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="SoLuongDaNhap" Type="Decimal" Precision="18" Scale="3" />
+        </EntityType>
+        <EntityType Name="ProviderModel">
+          <Key>
+            <PropertyRef Name="ProviderId" />
+          </Key>
+          <Property Name="ProviderId" Type="Guid" Nullable="false" />
+          <Property Name="ProviderCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProviderName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Address" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="AccountGroup" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="isSAPData" Type="Boolean" />
+          <Property Name="CreatedTime" Type="DateTime" Precision="3" />
+          <Property Name="LastEditedTime" Type="DateTime" Precision="3" />
+          <Property Name="Actived" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="SOLineModel">
+          <Key>
+            <PropertyRef Name="SOLine" />
+            <PropertyRef Name="SONumber" />
+          </Key>
+          <Property Name="SOLine" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="SONumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CompanyCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CustomerCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CustomerName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="ProductCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Qty" Type="Decimal" Precision="18" Scale="3" />
+          <Property Name="UNIT" Type="String" MaxLength="3" FixedLength="false" Unicode="true" />
+          <Property Name="OverTolerance" Type="Decimal" Precision="3" Scale="1" />
+          <Property Name="UnderTolerance" Type="Decimal" Precision="3" Scale="1" />
+          <Property Name="isUnlimited" Type="Boolean" />
+          <Property Name="DocumentDate" Type="DateTime" Precision="0" />
+          <Property Name="PONumber" Type="String" MaxLength="35" FixedLength="false" Unicode="true" />
+          <Property Name="isComplete" Type="Boolean" />
+          <Property Name="SoLuongDaXuat" Type="Decimal" Precision="18" Scale="3" />
+          <Property Name="isClosed" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="SOMasterModel">
+          <Key>
+            <PropertyRef Name="SONumber" />
+          </Key>
+          <Property Name="SONumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="CustomerCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CustomerName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="QtyTotal" Type="Decimal" Precision="13" Scale="3" />
+          <Property Name="isNhapKhau" Type="Boolean" />
+          <Property Name="isCompelete" Type="Boolean" />
+          <Property Name="SoLuongDaXuat" Type="Decimal" Precision="18" Scale="3" />
+        </EntityType>
+        <EntityType Name="UserModel">
+          <Key>
+            <PropertyRef Name="userid" />
+          </Key>
+          <Property Name="userid" Type="Guid" Nullable="false" />
+          <Property Name="username" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="password" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="fullname" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="email" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="phone" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="memberof" Type="Guid" />
+          <Property Name="active" Type="Boolean" />
+          <Property Name="token" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="rolecode" Type="Int32" />
+          <Property Name="UserType" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="taxcode" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IsService" Type="Boolean" />
+          <Property Name="IsVeTinh" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="VehicleModel">
+          <Key>
+            <PropertyRef Name="VehicleId" />
+          </Key>
+          <Property Name="VehicleId" Type="Guid" Nullable="false" />
+          <Property Name="Type" Type="Int32" />
+          <Property Name="VehicleNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="VehicleOwner" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="VehicleWeight" Type="Decimal" Precision="18" Scale="0" Nullable="false" />
+          <Property Name="isRoMooc" Type="Int32" />
+          <Property Name="TrongLuongDangKiem" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="TyLeVuot" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="isLock" Type="Boolean" />
+          <Property Name="isLockEdit" Type="Boolean" />
+          <Property Name="CreatedUserId" Type="Guid" />
+          <Property Name="CreatedTime" Type="DateTime" Precision="3" />
+          <Property Name="LastEditUserId" Type="Guid" />
+          <Property Name="LastEditTime" Type="DateTime" Precision="3" />
+          <Property Name="TempWeight" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="UpdateTempWeightTime" Type="DateTime" Precision="3" />
+          <Property Name="isContainer" Type="Boolean" />
+          <Property Name="isDauKeo" Type="Boolean" />
+          <Property Name="DriverId" Type="Guid" />
+          <Property Name="DriverName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="DriverCardNo" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="VehicleOwnerModel">
+          <Key>
+            <PropertyRef Name="VehicleOwner" />
+          </Key>
+          <Property Name="VehicleOwner" Type="String" MaxLength="100" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="VehicleOwnerName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="ProviderCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="CustomerCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Actived" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="VehicleRegisterMobileModel">
+          <Key>
+            <PropertyRef Name="VehicleRegisterMobileId" />
+          </Key>
+          <Property Name="VehicleRegisterMobileId" Type="Guid" Nullable="false" />
+          <Property Name="RegisterTime" Type="DateTime" Precision="3" />
+          <Property Name="ThoiGianToiDuKien" Type="DateTime" Precision="3" />
+          <Property Name="ThoiGianToiThucTe" Type="DateTime" Precision="3" />
+          <Property Name="DVVC" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="SoDonHang" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="GiaoNhan" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="VehicleNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="DriverName" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="DriverIdCard" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TrongLuongGiaoDuKien" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="TrongLuongGiaoThucTe" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="CungDuongCode" Type="Int32" />
+          <Property Name="CungDuongName" Type="String" MaxLength="512" FixedLength="false" Unicode="true" />
+          <Property Name="Assets" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Note" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="AllowEdit" Type="Boolean" />
+          <Property Name="DVVCCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ModifyTime" Type="DateTime" Precision="3" />
+          <Property Name="TapChat" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="ScaleTicketCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="UserRegisterId" Type="Guid" />
+          <Property Name="UserActiveId" Type="Guid" />
+          <Property Name="IsActive" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="VehicleRegisterPODetailModel">
+          <Key>
+            <PropertyRef Name="VehicleRegisterPODetailId" />
+          </Key>
+          <Property Name="VehicleRegisterPODetailId" Type="Guid" Nullable="false" />
+          <Property Name="VehicleRegisterMobileId" Type="Guid" />
+          <Property Name="PONumber" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="POLine" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProductCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="TiLe" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TrongLuong" Type="Decimal" Precision="18" Scale="0" />
+        </EntityType>
+        <EntityType Name="SyncTable">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="time" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityContainer Name="Web_BookingTransEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="CungDuongModels" EntityType="Self.CungDuongModel" />
+          <EntitySet Name="CustomerModels" EntityType="Self.CustomerModel" />
+          <EntitySet Name="DriverRegisters" EntityType="Self.DriverRegister" />
+          <EntitySet Name="POLineModels" EntityType="Self.POLineModel" />
+          <EntitySet Name="POMasterModels" EntityType="Self.POMasterModel" />
+          <EntitySet Name="ProviderModels" EntityType="Self.ProviderModel" />
+          <EntitySet Name="SOLineModels" EntityType="Self.SOLineModel" />
+          <EntitySet Name="SOMasterModels" EntityType="Self.SOMasterModel" />
+          <EntitySet Name="UserModels" EntityType="Self.UserModel" />
+          <EntitySet Name="VehicleModels" EntityType="Self.VehicleModel" />
+          <EntitySet Name="VehicleOwnerModels" EntityType="Self.VehicleOwnerModel" />
+          <EntitySet Name="VehicleRegisterMobileModels" EntityType="Self.VehicleRegisterMobileModel" />
+          <EntitySet Name="VehicleRegisterPODetailModels" EntityType="Self.VehicleRegisterPODetailModel" />
+          <EntitySet Name="SyncTables" EntityType="Self.SyncTable" />
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="Web_BookingTransModelStoreContainer" CdmEntityContainer="Web_BookingTransEntities">
+          <EntitySetMapping Name="CungDuongModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.CungDuongModel">
+              <MappingFragment StoreEntitySet="CungDuongModel">
+                <ScalarProperty Name="CungDuongCode" ColumnName="CungDuongCode" />
+                <ScalarProperty Name="CungDuongName" ColumnName="CungDuongName" />
+                <ScalarProperty Name="KhoangCach" ColumnName="KhoangCach" />
+                <ScalarProperty Name="Plant" ColumnName="Plant" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="CustomerModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.CustomerModel">
+              <MappingFragment StoreEntitySet="CustomerModel">
+                <ScalarProperty Name="CustomerId" ColumnName="CustomerId" />
+                <ScalarProperty Name="CustomerCode" ColumnName="CustomerCode" />
+                <ScalarProperty Name="CustomerName" ColumnName="CustomerName" />
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="isSAPData" ColumnName="isSAPData" />
+                <ScalarProperty Name="CreatedTime" ColumnName="CreatedTime" />
+                <ScalarProperty Name="LastEditedTime" ColumnName="LastEditedTime" />
+                <ScalarProperty Name="Actived" ColumnName="Actived" />
+                <ScalarProperty Name="CungDuongCode" ColumnName="CungDuongCode" />
+                <ScalarProperty Name="CungDuongName" ColumnName="CungDuongName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DriverRegisters">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.DriverRegister">
+              <MappingFragment StoreEntitySet="DriverRegister">
+                <ScalarProperty Name="VehicleNumber" ColumnName="VehicleNumber" />
+                <ScalarProperty Name="DriverId" ColumnName="DriverId" />
+                <ScalarProperty Name="DriverName" ColumnName="DriverName" />
+                <ScalarProperty Name="CreatedTime" ColumnName="CreatedTime" />
+                <ScalarProperty Name="ModifiedTime" ColumnName="ModifiedTime" />
+                <ScalarProperty Name="Creator" ColumnName="Creator" />
+                <ScalarProperty Name="DriverCardNo" ColumnName="DriverCardNo" />
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="OwnerId" ColumnName="OwnerId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="POLineModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.POLineModel">
+              <MappingFragment StoreEntitySet="POLineModel">
+                <ScalarProperty Name="PONumber" ColumnName="PONumber" />
+                <ScalarProperty Name="POLine" ColumnName="POLine" />
+                <ScalarProperty Name="ProviderCode" ColumnName="ProviderCode" />
+                <ScalarProperty Name="ProviderName" ColumnName="ProviderName" />
+                <ScalarProperty Name="CompanyCode" ColumnName="CompanyCode" />
+                <ScalarProperty Name="ProductCode" ColumnName="ProductCode" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="UNIT" ColumnName="UNIT" />
+                <ScalarProperty Name="OverTolerance" ColumnName="OverTolerance" />
+                <ScalarProperty Name="UnderTolerance" ColumnName="UnderTolerance" />
+                <ScalarProperty Name="isUnlimited" ColumnName="isUnlimited" />
+                <ScalarProperty Name="DocumentDate" ColumnName="DocumentDate" />
+                <ScalarProperty Name="DeliveryDate" ColumnName="DeliveryDate" />
+                <ScalarProperty Name="isRelease" ColumnName="isRelease" />
+                <ScalarProperty Name="isDeliveryCompleted" ColumnName="isDeliveryCompleted" />
+                <ScalarProperty Name="SoLuongDaNhap" ColumnName="SoLuongDaNhap" />
+                <ScalarProperty Name="isPMCCompleted" ColumnName="isPMCCompleted" />
+                <ScalarProperty Name="WarehouseCode" ColumnName="WarehouseCode" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="POMasterModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.POMasterModel">
+              <MappingFragment StoreEntitySet="POMasterModel">
+                <ScalarProperty Name="PONumber" ColumnName="PONumber" />
+                <ScalarProperty Name="ProviderCode" ColumnName="ProviderCode" />
+                <ScalarProperty Name="ProviderName" ColumnName="ProviderName" />
+                <ScalarProperty Name="QtyTotal" ColumnName="QtyTotal" />
+                <ScalarProperty Name="isNhapKhau" ColumnName="isNhapKhau" />
+                <ScalarProperty Name="isCompelete" ColumnName="isCompelete" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="SoLuongDaNhap" ColumnName="SoLuongDaNhap" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ProviderModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.ProviderModel">
+              <MappingFragment StoreEntitySet="ProviderModel">
+                <ScalarProperty Name="ProviderId" ColumnName="ProviderId" />
+                <ScalarProperty Name="ProviderCode" ColumnName="ProviderCode" />
+                <ScalarProperty Name="ProviderName" ColumnName="ProviderName" />
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="AccountGroup" ColumnName="AccountGroup" />
+                <ScalarProperty Name="isSAPData" ColumnName="isSAPData" />
+                <ScalarProperty Name="CreatedTime" ColumnName="CreatedTime" />
+                <ScalarProperty Name="LastEditedTime" ColumnName="LastEditedTime" />
+                <ScalarProperty Name="Actived" ColumnName="Actived" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SOLineModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.SOLineModel">
+              <MappingFragment StoreEntitySet="SOLineModel">
+                <ScalarProperty Name="SOLine" ColumnName="SOLine" />
+                <ScalarProperty Name="SONumber" ColumnName="SONumber" />
+                <ScalarProperty Name="CompanyCode" ColumnName="CompanyCode" />
+                <ScalarProperty Name="CustomerCode" ColumnName="CustomerCode" />
+                <ScalarProperty Name="CustomerName" ColumnName="CustomerName" />
+                <ScalarProperty Name="ProductCode" ColumnName="ProductCode" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Qty" ColumnName="Qty" />
+                <ScalarProperty Name="UNIT" ColumnName="UNIT" />
+                <ScalarProperty Name="OverTolerance" ColumnName="OverTolerance" />
+                <ScalarProperty Name="UnderTolerance" ColumnName="UnderTolerance" />
+                <ScalarProperty Name="isUnlimited" ColumnName="isUnlimited" />
+                <ScalarProperty Name="DocumentDate" ColumnName="DocumentDate" />
+                <ScalarProperty Name="PONumber" ColumnName="PONumber" />
+                <ScalarProperty Name="isComplete" ColumnName="isComplete" />
+                <ScalarProperty Name="SoLuongDaXuat" ColumnName="SoLuongDaXuat" />
+                <ScalarProperty Name="isClosed" ColumnName="isClosed" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SOMasterModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.SOMasterModel">
+              <MappingFragment StoreEntitySet="SOMasterModel">
+                <ScalarProperty Name="SONumber" ColumnName="SONumber" />
+                <ScalarProperty Name="CustomerCode" ColumnName="CustomerCode" />
+                <ScalarProperty Name="CustomerName" ColumnName="CustomerName" />
+                <ScalarProperty Name="QtyTotal" ColumnName="QtyTotal" />
+                <ScalarProperty Name="isNhapKhau" ColumnName="isNhapKhau" />
+                <ScalarProperty Name="isCompelete" ColumnName="isCompelete" />
+                <ScalarProperty Name="SoLuongDaXuat" ColumnName="SoLuongDaXuat" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.UserModel">
+              <MappingFragment StoreEntitySet="UserModel">
+                <ScalarProperty Name="IsVeTinh" ColumnName="IsVeTinh" />
+                <ScalarProperty Name="IsService" ColumnName="IsService" />
+                <ScalarProperty Name="taxcode" ColumnName="taxcode" />
+                <ScalarProperty Name="userid" ColumnName="userid" />
+                <ScalarProperty Name="username" ColumnName="username" />
+                <ScalarProperty Name="password" ColumnName="password" />
+                <ScalarProperty Name="fullname" ColumnName="fullname" />
+                <ScalarProperty Name="email" ColumnName="email" />
+                <ScalarProperty Name="phone" ColumnName="phone" />
+                <ScalarProperty Name="memberof" ColumnName="memberof" />
+                <ScalarProperty Name="active" ColumnName="active" />
+                <ScalarProperty Name="token" ColumnName="token" />
+                <ScalarProperty Name="rolecode" ColumnName="rolecode" />
+                <ScalarProperty Name="UserType" ColumnName="UserType" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="VehicleModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.VehicleModel">
+              <MappingFragment StoreEntitySet="VehicleModel">
+                <ScalarProperty Name="DriverCardNo" ColumnName="DriverCardNo" />
+                <ScalarProperty Name="DriverName" ColumnName="DriverName" />
+                <ScalarProperty Name="DriverId" ColumnName="DriverId" />
+                <ScalarProperty Name="VehicleId" ColumnName="VehicleId" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="VehicleNumber" ColumnName="VehicleNumber" />
+                <ScalarProperty Name="VehicleOwner" ColumnName="VehicleOwner" />
+                <ScalarProperty Name="VehicleWeight" ColumnName="VehicleWeight" />
+                <ScalarProperty Name="isRoMooc" ColumnName="isRoMooc" />
+                <ScalarProperty Name="TrongLuongDangKiem" ColumnName="TrongLuongDangKiem" />
+                <ScalarProperty Name="TyLeVuot" ColumnName="TyLeVuot" />
+                <ScalarProperty Name="isLock" ColumnName="isLock" />
+                <ScalarProperty Name="isLockEdit" ColumnName="isLockEdit" />
+                <ScalarProperty Name="CreatedUserId" ColumnName="CreatedUserId" />
+                <ScalarProperty Name="CreatedTime" ColumnName="CreatedTime" />
+                <ScalarProperty Name="LastEditUserId" ColumnName="LastEditUserId" />
+                <ScalarProperty Name="LastEditTime" ColumnName="LastEditTime" />
+                <ScalarProperty Name="TempWeight" ColumnName="TempWeight" />
+                <ScalarProperty Name="UpdateTempWeightTime" ColumnName="UpdateTempWeightTime" />
+                <ScalarProperty Name="isContainer" ColumnName="isContainer" />
+                <ScalarProperty Name="isDauKeo" ColumnName="isDauKeo" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="VehicleOwnerModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.VehicleOwnerModel">
+              <MappingFragment StoreEntitySet="VehicleOwnerModel">
+                <ScalarProperty Name="VehicleOwner" ColumnName="VehicleOwner" />
+                <ScalarProperty Name="VehicleOwnerName" ColumnName="VehicleOwnerName" />
+                <ScalarProperty Name="ProviderCode" ColumnName="ProviderCode" />
+                <ScalarProperty Name="CustomerCode" ColumnName="CustomerCode" />
+                <ScalarProperty Name="Actived" ColumnName="Actived" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="VehicleRegisterMobileModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.VehicleRegisterMobileModel">
+              <MappingFragment StoreEntitySet="VehicleRegisterMobileModel">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="UserActiveId" ColumnName="UserActiveId" />
+                <ScalarProperty Name="UserRegisterId" ColumnName="UserRegisterId" />
+                <ScalarProperty Name="ScaleTicketCode" ColumnName="ScaleTicketCode" />
+                <ScalarProperty Name="TapChat" ColumnName="TapChat" />
+                <ScalarProperty Name="ModifyTime" ColumnName="ModifyTime" />
+                <ScalarProperty Name="DVVCCode" ColumnName="DVVCCode" />
+                <ScalarProperty Name="VehicleRegisterMobileId" ColumnName="VehicleRegisterMobileId" />
+                <ScalarProperty Name="RegisterTime" ColumnName="RegisterTime" />
+                <ScalarProperty Name="ThoiGianToiDuKien" ColumnName="ThoiGianToiDuKien" />
+                <ScalarProperty Name="ThoiGianToiThucTe" ColumnName="ThoiGianToiThucTe" />
+                <ScalarProperty Name="DVVC" ColumnName="DVVC" />
+                <ScalarProperty Name="SoDonHang" ColumnName="SoDonHang" />
+                <ScalarProperty Name="GiaoNhan" ColumnName="GiaoNhan" />
+                <ScalarProperty Name="VehicleNumber" ColumnName="VehicleNumber" />
+                <ScalarProperty Name="DriverName" ColumnName="DriverName" />
+                <ScalarProperty Name="DriverIdCard" ColumnName="DriverIdCard" />
+                <ScalarProperty Name="TrongLuongGiaoDuKien" ColumnName="TrongLuongGiaoDuKien" />
+                <ScalarProperty Name="TrongLuongGiaoThucTe" ColumnName="TrongLuongGiaoThucTe" />
+                <ScalarProperty Name="CungDuongCode" ColumnName="CungDuongCode" />
+                <ScalarProperty Name="CungDuongName" ColumnName="CungDuongName" />
+                <ScalarProperty Name="Assets" ColumnName="Assets" />
+                <ScalarProperty Name="Note" ColumnName="Note" />
+                <ScalarProperty Name="AllowEdit" ColumnName="AllowEdit" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="VehicleRegisterPODetailModels">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.VehicleRegisterPODetailModel">
+              <MappingFragment StoreEntitySet="VehicleRegisterPODetailModel">
+                <ScalarProperty Name="TrongLuong" ColumnName="TrongLuong" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="TiLe" ColumnName="TiLe" />
+                <ScalarProperty Name="VehicleRegisterPODetailId" ColumnName="VehicleRegisterPODetailId" />
+                <ScalarProperty Name="VehicleRegisterMobileId" ColumnName="VehicleRegisterMobileId" />
+                <ScalarProperty Name="PONumber" ColumnName="PONumber" />
+                <ScalarProperty Name="POLine" ColumnName="POLine" />
+                <ScalarProperty Name="ProductCode" ColumnName="ProductCode" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="SyncTables">
+            <EntityTypeMapping TypeName="Web_BookingTransModel.SyncTable">
+              <MappingFragment StoreEntitySet="SyncTable">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="time" ColumnName="time" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
